@@ -1,4 +1,23 @@
-import { createApp } from 'vue'
-import App from './App.vue'
+import { createApp } from 'vue';
+import App from './App.vue';
+import { createRouter, createWebHistory } from 'vue-router';
 
-createApp(App).mount('#app')
+const routes = [
+  {
+    path: '/',
+    name: 'Home',
+    component: () => import('./components/HomeButton.vue'),
+  },
+  // Define other routes here
+];
+
+const router = createRouter({
+  history: createWebHistory(),
+  routes,
+});
+
+const app = createApp(App);
+
+app.use(router);
+
+app.mount('#app');
