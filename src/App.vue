@@ -1,15 +1,16 @@
+
 <template>
-
   <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css">
+  <div class="black-bg" v-if="isLoading==true"><div class="container">
+  <div class="spinner" style="margin-top: 250px;"></div>
+  </div></div>
 
-  <div class="black-bg" v-if="flag==true">
-    <div class="white-bg">
-      <h4>상세 페이지</h4>
-      <p>상세 페이지 내용</p>
-      <button @click="flag=false">닫기</button>
-    </div>
-  </div>
-  
+
+    <div class="black-bg" v-if="flag==true">
+    <div class="container"><div class="text-box">
+      <p v-for="message in logMessage" :key="message" v-html="formatLogMessage(message)"></p>
+    </div></div><button type="button" class="btn btn-primary" style="margin-top: 10px;" @click="flag=false">닫기</button></div>
+    
   <div>
     <router-link to="/" class="header-link">
     <h1>KCS2</h1>
@@ -17,22 +18,18 @@
     </router-link>
   </div>
   <div>
-    <h4 style="margin-right: 5px;">URL</h4>
-    <p><input style="width: 30%; height: 30px; font-size: 15px;" v-model="url" placeholder="URL을 입력하세요"></p>
+    <h4 style="margin-right: 5px; margin-top: 100px;">URL</h4>
+    <p><input type="text" style="width: 30%; height: 30px; font-size: 15px;" v-model="apiServer" autocomplete="off" placeholder="URL을 입력하세요"></p>
     <h4 style="margin-right: 5px;">Token</h4>
     <p><input type= "password" style="width: 30%; height: 30px; font-size: 15px;" v-model="token" placeholder="Token을 입력하세요"></p>
     <button type="button" class="btn btn-primary" @click="sendDataToBackend">Primary</button>
-    <div class="container"><div class="text-box">
-      <p v-for="message in logMessage" :key="message">{{ message }}</p>
-      <p v-if="logMessage.length === 0">No log messages available.</p>
-    </div></div>
+
   </div>
 </template>
 
 <script>
 //import HomeButton from './components/HomeButton.vue'; // Import the HomeButton component
-import axios from 'axios';
-
+import axios from 'axios'
 
 export default {
   name: 'App',
@@ -41,27 +38,38 @@ export default {
       inputText : "각각의 NODE에 대한 LOG",
       logMessage : [],
       flag : false,
-      url : '',
+      isLoading : false,
+      apiServer : '',
       token : '',
     }
   },
   methods: {
+    formatLogMessage(rawLog) {
+      // Process the log message here, such as adding line breaks or other formatting
+      const formattedLog = rawLog.replace(/\n/g, '<br>'); // Replace line breaks with <br> tags
+      return formattedLog;
+    },
     sendDataToBackend() {
         // Data to send to the backend
-        const data = { token: this.token, url: this.url };
-        axios.post('http://localhost/8080/api/runCurl', data)
-          .then(response => {
-            // Handle the response from the backend
-            this.logMessage = response.data;
-          })
-          .catch(error => {
+      this.isLoading = true;
+      const data = { apiServer: this.apiServer, token: this.token };
+      axios.post('http://localhost:8080/api/runCurl', data)
+           .then(response => {
+          // Handle the response from the backend
+              this.logMessage = response.data;
+           })
+           .catch(error => {
             // Handle any errors
-            console.error(error);
-          });
-      },
-  },
+              console.error(error);
+            })
+            .finally(() => {
+              this.isLoading = false;
+              this.flag = true;
+            });
+    },
+  },  
   components: {
-    //'home-button': HomeButton // Register the HomeButton component
+    //'home-button': HomeButton // Register the HomeButton 
   },
 }
 </script>
@@ -114,20 +122,39 @@ div {
   border-radius: 5px; /* Add rounded corners */
   margin-top: 10px; /* Adjust margin for spacing */
 
-  width: 1000px;
-  height: 400px;
+  width: 1300px;
+  height: 600px;
+  
+  overflow-y: scroll;
+  overflow-x: hidden;
+
+  text-align: left;
+  white-space: pre-line;
 }
 .container {
   display: flex;
   justify-content: center; /* Center horizontally */
   align-items: center; /* Center vertically */
-  height: 50vh; /* Optional: Make the container full height of the viewport */
+  /* height: 50vh;  Optional: Make the container full height of the viewport */
 }
 .header-link h1,
 .header-link h4 {
   display: inline;
   margin-right: 15px;
 }
+.spinner {
+    border: 8px solid rgba(0, 0, 0, 0.1);
+    border-left: 8px solid #3498db;
+    border-radius: 100%;
+    width: 80px;
+    height: 80px;
+    animation: spin 2s linear infinite;
+  }
+
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
 a {
   color: inherit; /* Use the default text color */
   text-decoration: none; /* Remove underline */
