@@ -1,5 +1,10 @@
 
 <template>
+  <head>
+    <title>WebSocket Example</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.5.2/sockjs.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
+  </head>
   <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css">
   <div class="black-bg" v-if="isLoading==true"><div class="container">
   <div class="spinner" style="margin-top: 250px;"></div>
@@ -37,6 +42,7 @@ export default {
     return {
       inputText : "각각의 NODE에 대한 LOG",
       logMessage : [],
+      stompClient: null,
       flag : false,
       isLoading : false,
       apiServer : '',
@@ -44,30 +50,37 @@ export default {
     }
   },
   methods: {
+    pushMessage(message) {
+      this.logMessage.push(message);
+    },
     formatLogMessage(rawLog) {
       // Process the log message here, such as adding line breaks or other formatting
       const formattedLog = rawLog.replace(/\n/g, '<br>'); // Replace line breaks with <br> tags
       return formattedLog;
     },
     sendDataToBackend() {
-        // Data to send to the backend
-      this.isLoading = true;
-      const data = { apiServer: this.apiServer, token: this.token };
-      axios.post('http://localhost:8080/api/runCurl', data)
-           .then(response => {
-          // Handle the response from the backend
-              this.logMessage = response.data;
-           })
-           .catch(error => {
-            // Handle any errors
-              console.error(error);
-            })
-            .finally(() => {
-              this.isLoading = false;
-              this.flag = true;
-            });
+      const messageData = {
+        apiServer: this.apiServer,
+        token: this.token,
+      }
+      this.stompClient.send("/app/chat.sendDataToBackend", JSON.stringify({messageData}))
+      this.apiServer = ""; this.token = ""
     },
-  },  
+    connectWebSocket() {
+      var socket = new SocketJS('/ws-chat');
+      this.stompClient = Stomp.over(socket);
+
+      this.stompClient.connect({}, (frame)=>{
+        this.stompClient.subscribe('/topic/publicChat', (response)=>{
+          var message = JSON.parse(response.body).connect;
+          this.showMessage(message)
+        });
+      });
+    },
+  }, 
+  mounted() {
+    this.connectWebSocket();
+  },
   components: {
     //'home-button': HomeButton // Register the HomeButton 
   },
