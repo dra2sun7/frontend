@@ -6,6 +6,6 @@ module.exports = {
 
   // npm run serve 개발 진행시에 포트가 다르기 때문에 프록시 설정
   devServer: {
-    //proxy: 'http://localhost:8080' // 서버 프로젝트 포트번호와 동일할 것
+    proxy: 'http://localhost:8080' // 서버 프로젝트 포트번호와 동일할 것
   },
 };
