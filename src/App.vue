@@ -50,7 +50,7 @@ export default {
     }
   },
   methods: {
-    pushMessage(message) {
+    showMessage(message) {
       this.logMessage.push(message);
     },
     formatLogMessage(rawLog) {
@@ -73,7 +73,7 @@ export default {
       this.stompClient.connect({}, (frame)=>{
         this.stompClient.subscribe('/topic/publicChat', (response)=>{
           var message = JSON.parse(response.body).connect;
-          this.showMessage(message)
+          this.showMessage(message);
         });
       });
     },
