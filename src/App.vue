@@ -27,7 +27,7 @@
     <p><input type="text" style="width: 30%; height: 30px; font-size: 15px;" v-model="apiServer" autocomplete="off" placeholder="URL을 입력하세요"></p>
     <h4 style="margin-right: 5px;">Token</h4>
     <p><input type= "password" style="width: 30%; height: 30px; font-size: 15px;" v-model="token" placeholder="Token을 입력하세요"></p>
-    <button type="button" class="btn btn-primary" @click="sendDataToBackend">Primary</button>
+    <button type="button" class="btn btn-primary" @click="connectWebSocket()">Primary</button>
 
   </div>
 </template>
@@ -58,20 +58,20 @@ export default {
       const formattedLog = rawLog.replace(/\n/g, '<br>'); // Replace line breaks with <br> tags
       return formattedLog;
     },
-    sendDataToBackend() {
-      const messageData = {
-        apiServer: this.apiServer,
-        token: this.token,
-      }
-      this.stompClient.send("/app/chat.sendDataToBackend", JSON.stringify({messageData}))
-      this.apiServer = ""; this.token = ""
-    },
+    // sendDataToBackend() {
+    //   const messageData = {
+    //     apiServer: this.apiServer,
+    //     token: this.token,
+    //   }
+    //   this.stompClient.send("http://localhost:8080/app/chat.sendDataToBackend", JSON.stringify({messageData}))
+    //   this.apiServer = ""; this.token = ""
+    // },
     connectWebSocket() {
-      var socket = new SocketJS('/ws-chat');
+      var socket = new SocketJS('http://localhost:8080/ws-chat');
       this.stompClient = Stomp.over(socket);
 
       this.stompClient.connect({}, (frame)=>{
-        this.stompClient.subscribe('/topic/publicChat', (response)=>{
+        this.stompClient.subscribe('http://localhost:8080/topic/publicChat', (response)=>{
           var message = JSON.parse(response.body).connect;
           this.showMessage(message);
         });
